@@ -6,7 +6,18 @@ import com.opencsv.CSVWriter;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -14,7 +25,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ParserConfigurationException, TransformerException {
         String[] employee1 = "1,John,Smith,USA,25".split(",");
         String[] employee2 = "2,Inav,Petrov,RU,23".split(",");
         try (CSVWriter writer = new CSVWriter(new FileWriter("data.csv", true))) {
@@ -31,7 +42,36 @@ public class Main {
         System.out.println(json);
         writeString(json);
 
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document document = builder.newDocument();
+        Element staff = document.createElement("staff");
+        document.appendChild(staff);
+        Element employee = document.createElement("employee");
+        staff.appendChild(employee);
+        Element employeeFirst = document.createElement("employee");
+        employee.appendChild(employeeFirst);
+        addElements(document, employeeFirst, columnMapping, employee1);
+        Element employeeSecond = document.createElement("employee");
+        addElements(document, employeeFirst, columnMapping, employee2);
+        employee.appendChild(employeeSecond);
+
+        DOMSource domSource = new DOMSource(document);
+        StreamResult streamResult = new StreamResult(new File("data.xml"));
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        transformer.transform(domSource, streamResult);
+
     }
+
+    public static void addElements(Document document, Element employee, String[] name, String[] value) {
+        for (int i = 0; i < name.length; i++) {
+            Element id = document.createElement(name[i]);
+            id.appendChild(document.createTextNode(value[i]));
+            employee.appendChild(id);
+        }
+    }
+
 
     private static List<Employee> parseCSV(String[] columnMapping, String fileName) {
         List<Employee> staff = null;
@@ -59,9 +99,9 @@ public class Main {
     }
 
     private static void writeString(String str) {
-        try (FileWriter file = new FileWriter("data.json")){
+        try (FileWriter file = new FileWriter("data.json")) {
             file.write(str);
-        } catch(IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
