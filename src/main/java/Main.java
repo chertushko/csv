@@ -6,8 +6,8 @@ import com.opencsv.CSVWriter;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -22,10 +22,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
-    public static void main(String[] args) throws ParserConfigurationException, TransformerException {
+    public static void main(String[] args) throws ParserConfigurationException, TransformerException, IOException, SAXException {
         String[] employee1 = "1,John,Smith,USA,25".split(",");
         String[] employee2 = "2,Inav,Petrov,RU,23".split(",");
         try (CSVWriter writer = new CSVWriter(new FileWriter("data.csv", true))) {
@@ -37,10 +38,10 @@ public class Main {
         String[] columnMapping = {"id", "firstName", "lastName", "country", "age"};
         String fileName = "data.csv";
         List<Employee> list = parseCSV(columnMapping, fileName);
-        System.out.println(list);
+        System.out.println("parseCSV" + list);
         String json = listToJson(list);
-        System.out.println(json);
-        writeString(json);
+        System.out.println("json" + json);
+        writeString(json, "data1.json");
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -53,7 +54,7 @@ public class Main {
         employee.appendChild(employeeFirst);
         addElements(document, employeeFirst, columnMapping, employee1);
         Element employeeSecond = document.createElement("employee");
-        addElements(document, employeeFirst, columnMapping, employee2);
+        addElements(document, employeeSecond, columnMapping, employee2);
         employee.appendChild(employeeSecond);
 
         DOMSource domSource = new DOMSource(document);
@@ -61,6 +62,14 @@ public class Main {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         transformer.transform(domSource, streamResult);
+
+        List<Employee> listXML = parseXML("data.xml");
+        System.out.println("parseXML" + listXML);
+        String json2 = listToJson(listXML);
+        System.out.println("json2" + json2);
+        writeString(json2, "data2.json");
+
+        // С помощью ранее написанного метода listToJson() преобразуйте список в JSON и запишите его в файл c помощью метода writeString().
 
     }
 
@@ -98,13 +107,38 @@ public class Main {
         return json;
     }
 
-    private static void writeString(String str) {
-        try (FileWriter file = new FileWriter("data.json")) {
+    private static void writeString(String str, String fileJson) {
+        try (FileWriter file = new FileWriter(fileJson)) {
             file.write(str);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    private static List<Employee> parseXML(String file) throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document document = builder.parse(new File(file));
+        Node node = document.getDocumentElement();
+        NodeList nodeList = node.getChildNodes();
+        List<Employee> staff = new ArrayList<>();
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            Node nodes = nodeList.item(i);
+            if (Node.ELEMENT_NODE == nodes.getNodeType()) {
+                Element element = (Element) nodes;
+                staff.add(new Employee(Long.parseLong(element.getElementsByTagName("id").item(i).getTextContent()),
+                        (element.getElementsByTagName("firstName").item(i).getTextContent()),
+                        (element.getElementsByTagName("lastName").item(i).getTextContent()),
+                        (element.getElementsByTagName("country").item(i).getTextContent()),
+                        Integer.parseInt(element.getElementsByTagName("age").item(i).getTextContent())));
+                System.out.println("add" + staff);
+            }
+        }
+        return staff;
+    }
+
 }
+
+
 
 
