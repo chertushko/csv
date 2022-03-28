@@ -48,8 +48,6 @@ public class Main {
         Document document = builder.newDocument();
         Element staff = document.createElement("staff");
         document.appendChild(staff);
-//        Element employee = document.createElement("employee");
-//        staff.appendChild(employee);
         Element employeeFirst = document.createElement("employee");
         staff.appendChild(employeeFirst);
         addElements(document, employeeFirst, columnMapping, employee1);
@@ -69,7 +67,6 @@ public class Main {
         System.out.println("json2" + json2);
         writeString(json2, "data2.json");
 
-        // С помощью ранее написанного метода listToJson() преобразуйте список в JSON и запишите его в файл c помощью метода writeString().
 
     }
 
