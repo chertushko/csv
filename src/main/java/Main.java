@@ -48,14 +48,14 @@ public class Main {
         Document document = builder.newDocument();
         Element staff = document.createElement("staff");
         document.appendChild(staff);
-        Element employee = document.createElement("employee");
-        staff.appendChild(employee);
+//        Element employee = document.createElement("employee");
+//        staff.appendChild(employee);
         Element employeeFirst = document.createElement("employee");
-        employee.appendChild(employeeFirst);
+        staff.appendChild(employeeFirst);
         addElements(document, employeeFirst, columnMapping, employee1);
         Element employeeSecond = document.createElement("employee");
         addElements(document, employeeSecond, columnMapping, employee2);
-        employee.appendChild(employeeSecond);
+        staff.appendChild(employeeSecond);
 
         DOMSource domSource = new DOMSource(document);
         StreamResult streamResult = new StreamResult(new File("data.xml"));
@@ -126,11 +126,11 @@ public class Main {
             Node nodes = nodeList.item(i);
             if (Node.ELEMENT_NODE == nodes.getNodeType()) {
                 Element element = (Element) nodes;
-                staff.add(new Employee(Long.parseLong(element.getElementsByTagName("id").item(i).getTextContent()),
-                        (element.getElementsByTagName("firstName").item(i).getTextContent()),
-                        (element.getElementsByTagName("lastName").item(i).getTextContent()),
-                        (element.getElementsByTagName("country").item(i).getTextContent()),
-                        Integer.parseInt(element.getElementsByTagName("age").item(i).getTextContent())));
+                staff.add(new Employee(Long.parseLong(element.getElementsByTagName("id").item(0).getTextContent()),
+                        (element.getElementsByTagName("firstName").item(0).getTextContent()),
+                        (element.getElementsByTagName("lastName").item(0).getTextContent()),
+                        (element.getElementsByTagName("country").item(0).getTextContent()),
+                        Integer.parseInt(element.getElementsByTagName("age").item(0).getTextContent())));
                 System.out.println("add" + staff);
             }
         }
