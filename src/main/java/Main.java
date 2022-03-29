@@ -6,6 +6,10 @@ import com.opencsv.CSVWriter;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -17,10 +21,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +68,40 @@ public class Main {
         System.out.println("json2" + json2);
         writeString(json2, "data2.json");
 
+        String jsonText = readString("data2.json");
+        List<Employee> newList = jsonToList(jsonText);
+        System.out.println("task3" + newList);
 
+    }
+
+    private static String readString(String fileJson) {
+        StringBuilder result = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileJson))) {
+            String string;
+            while ((string = reader.readLine()) != null) {
+                result.append(string);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result.toString();
+    }
+
+    private static List<Employee> jsonToList(String jsonText) {
+        List<Employee> staff = new ArrayList<>();
+        JSONParser parser = new JSONParser();
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+        try {
+            JSONArray jsonArray = (JSONArray) parser.parse(jsonText);
+            for (Object json : jsonArray) {
+                Employee employee = gson.fromJson(json.toString(), Employee.class);
+                staff.add(employee);
+            }
+        } catch (ParseException e){
+            e.printStackTrace();
+        }
+        return staff;
     }
 
     public static void addElements(Document document, Element employee, String[] name, String[] value) {
